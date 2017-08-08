@@ -19,11 +19,11 @@ data Event = Start | NewSequence (List Int)
 
 type State = List Int
 
-foldp :: ∀ fx. Event -> State -> EffModel State Event fx
+foldp :: ∀ fx. Event -> State -> EffModel State Event (random :: RANDOM)
 foldp (NewSequence list) state =
   noEffects $ list
 foldp Start state = { state: state, effects: [ do
-  result <- generateSequence
+  result <- liftEff generateSequence
   pure $ Just $ NewSequence result
 ]}
 
