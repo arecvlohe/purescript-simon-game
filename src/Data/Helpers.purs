@@ -1,12 +1,9 @@
 module Data.Helpers where
 
-import Prelude
-
--- LIBRARIES
-
-import Data.Unfoldable (replicateA)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Random (RANDOM, randomInt)
+import Data.List.Lazy (List, replicateM)
 
-generateSequence = 
-  replicateA 20 (randomInt 1 4)
+generateSequence :: ∀ fx. Eff (random :: RANDOM) (List Int)
+generateSequence =
+  replicateM 20 (randomInt 1 4) 

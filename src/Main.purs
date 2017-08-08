@@ -1,38 +1,42 @@
 module Main where
 
-import Prelude hiding (div)
-
--- LIBRARIES
-
 import Control.Monad.Eff (Eff)
-import Data.List (List(..), (:))
-import Pux (CoreEffects, EffModel, start)
+import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Control.Monad.Eff.Random (RANDOM)
+import Data.Helpers (generateSequence)
+import Data.List.Lazy (List, nil)
+import Data.Maybe (Maybe(..))
+import Prelude hiding (div)
+import Pux (CoreEffects, EffModel, noEffects, start)
 import Pux.DOM.Events (onClick)
 import Pux.DOM.HTML (HTML)
 import Pux.Renderer.React (renderToDOM)
 import Text.Smolder.HTML (button, div)
 import Text.Smolder.Markup (text, (#!))
 
--- LOCAL IMPORTS
-
-import Data.Helpers (generateSequence)
-
-data Event = Start
+data Event = Start | NewSequence (List Int)
 
 type State = List Int
 
 foldp :: ∀ fx. Event -> State -> EffModel State Event fx
-foldp Start n = { state: (1 : 2 : Nil), effects: [ ] }
+foldp (NewSequence list) state =
+  noEffects $ list
+foldp Start state = { state: state, effects: [ do
+  result <- generateSequence
+  pure $ Just $ NewSequence result
+]}
+
 
 view :: State -> HTML Event
 view count =
   div do
     button #! onClick (const Start) $ text "Start"
 
-main :: ∀ fx. Eff (CoreEffects fx) Unit
+main :: ∀ fx. Eff (CoreEffects fx (random :: RANDOM)) Unit
 main = do
   app <- start
-    { initialState: (1 : Nil)
+    { initialState: nil
     , view
     , foldp
     , inputs: []
