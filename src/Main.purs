@@ -10,41 +10,55 @@ import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Styles (buttonStyled)
 import Prelude hiding (div)
-import Pux (CoreEffects, EffModel, start, onlyEffects)
-import Pux.DOM.Events (onClick)
+import Pux (CoreEffects, EffModel, noEffects, onlyEffects, start)
+import Pux.DOM.Events (DOMEvent, onChange, onClick)
 import Pux.DOM.HTML (HTML)
 import Pux.Renderer.React (renderToDOM)
-import Text.Smolder.HTML (button, div)
-import Text.Smolder.Markup (text, (#!), (!))
+import Text.Smolder.HTML (button, div, input, label)
+import Text.Smolder.HTML.Attributes (type', checked)
+import Text.Smolder.Markup (text, (#!), (!), (!?))
 
 
-data Event = Start | Click | NewSequence (List String) | UserClick String
+data Event = Start | NewSequence (List String) | UserClick String | Strict DOMEvent | Click
 
 type AppEffects = (random :: RANDOM, console :: CONSOLE)
 
 type State = 
-  { sequence :: List String }
+  { sequence :: List String
+  , userInput :: List String
+  , count :: Int
+  , strict :: Boolean
+  }
 
 init :: State
-init = { sequence: Nil }
+init = 
+  { sequence: Nil
+  , userInput: Nil
+  , count : 0
+  , strict: false
+  }
 
 foldp :: Event -> State -> EffModel State Event AppEffects
+foldp Start state = 
+  { state: state
+  , effects: [ do
+    result <- liftEff generateSequence
+    let colors = convertToColors result
+    pure $ Just $ NewSequence colors
+    ]
+  }
 foldp (NewSequence list) state = 
   { state: state { sequence = list }
   , effects: [ logShow list *> pure Nothing ]
-}
-
-foldp Start state = { state: state, effects: [ do
-  result <- liftEff generateSequence
-  let colors = convertToColors result
-  pure $ Just $ NewSequence colors
-]}
-
+  }
+foldp (UserClick color) state = 
+  onlyEffects state [ log color *> pure Nothing ]
+foldp (Strict e) state = noEffects $ state { strict = not state.strict }
 foldp Click state = onlyEffects state [ log "click" *> pure Nothing ]
-foldp (UserClick color) state = onlyEffects state [ log color *> pure Nothing ]
+
 
 view :: State -> HTML Event
-view count =
+view state =
   div do
     div do
       div 
@@ -63,6 +77,9 @@ view count =
         ! buttonStyled blue
         #! onClick (const $ UserClick "blue")
         $ text "blue"
+    div do
+      label $ text "Strict"
+      (input !? state.strict) (checked "checked") ! type' "checkbox" #! onChange Strict 
     button #! onClick (const Start) $ text "Start"
     button #! onClick (const Click) $ text "Click"
 
