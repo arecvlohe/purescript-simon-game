@@ -6,7 +6,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM)
 import Data.Helpers (generateSequence, convertToColors)
-import Data.List (List(..))
+import Data.List (List(..), snoc)
 import Data.Maybe (Maybe(..))
 import Data.Styles (buttonStyled)
 import Prelude hiding (div)
@@ -52,7 +52,9 @@ foldp (NewSequence list) state =
   , effects: [ logShow list *> pure Nothing ]
   }
 foldp (UserClick color) state = 
-  onlyEffects state [ log color *> pure Nothing ]
+  { state: state { userInput = snoc state.userInput color }
+  , effects: [ logShow (snoc state.userInput color) *> pure Nothing ]
+  }
 foldp (Strict e) state = noEffects $ state { strict = not state.strict }
 foldp Click state = onlyEffects state [ log "click" *> pure Nothing ]
 
