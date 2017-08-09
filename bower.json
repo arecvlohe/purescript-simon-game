@@ -16,7 +16,8 @@
     "purescript-lists": "^4.9.0",
     "purescript-quickcheck": "^4.4.0",
     "purescript-unfoldable": "^3.0.0",
-    "purescript-signal": "^9.0.0"
+    "purescript-signal": "^9.0.0",
+    "purescript-aff": "^3.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"
