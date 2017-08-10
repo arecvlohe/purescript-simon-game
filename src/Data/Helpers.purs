@@ -6,7 +6,6 @@ import Data.List (List)
 import Data.Unfoldable (replicateA)
 import Data.Functor (map)
 
-
 generateSequence :: ∀ fx. Eff (random :: RANDOM | fx) (List Int)
 generateSequence =
   replicateA 20 (randomInt 1 4)
