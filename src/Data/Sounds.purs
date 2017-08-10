@@ -1,4 +1,7 @@
-module Data.Sounds where
+module Data.Sounds (
+  SOUND,
+  play
+) where
 
 import Prelude
 import Control.Monad.Eff (Eff, kind Effect)

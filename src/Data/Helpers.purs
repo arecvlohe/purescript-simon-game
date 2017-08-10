@@ -1,4 +1,7 @@
-module Data.Helpers where
+module Data.Helpers (
+  generateSequence,
+  convertToColors
+) where
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Random (RANDOM, randomInt)

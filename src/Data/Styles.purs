@@ -1,4 +1,6 @@
-module Data.Styles where
+module Data.Styles (
+  buttonStyled 
+) where
 
 import Prelude
 
