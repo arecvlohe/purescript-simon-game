@@ -3,12 +3,31 @@ module Data.Styles where
 import Prelude
 
 import CSS (Color, backgroundColor, height)
+import CSS.Color (red, green, yellow, blue, black, saturate, darken)
 import CSS.Size (px)
 import Pux.DOM.HTML.Attributes (style)
 import Text.Smolder.Markup (Attribute)
 
-buttonStyled :: Color -> Attribute
-buttonStyled color =
-  style do 
-    backgroundColor color
-    height $ px 100.0
+buttonStyled :: String -> String -> Attribute
+buttonStyled color currentColor =
+  let
+    converted = convertColor color
+    c = if currentColor == color && (color == "green" || color == "yellow" || color == "red")
+        then saturate (-0.5) $ converted
+      else if currentColor == color && color == "blue"
+        then darken 0.1 $ converted
+      else convertColor color
+  in
+    style do
+      backgroundColor c
+      height $ px 100.0
+  
+
+convertColor :: String -> Color
+convertColor color =
+  case color of
+    "red" -> red
+    "green" -> green
+    "yellow" -> yellow
+    "blue" -> blue
+    _ -> black
