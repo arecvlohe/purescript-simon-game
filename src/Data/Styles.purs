@@ -16,7 +16,7 @@ buttonStyled color currentColor =
         then saturate (-0.5) $ converted
       else if currentColor == color && color == "blue"
         then darken 0.1 $ converted
-      else convertColor color
+      else converted
   in
     style do
       backgroundColor c
