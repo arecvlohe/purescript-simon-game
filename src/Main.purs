@@ -1,12 +1,13 @@
 module Main where
 
-import Control.Monad.Aff (delay)
+import Control.Monad.Aff (Aff, delay)
 import Control.Monad.Aff.Console (CONSOLE)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM)
 import DOM (DOM)
-import Data.Array (fromFoldable)
+import Data.Array (fromFoldable, concat)
+import Data.Int (toNumber)
 import Data.Helpers (generateSequence, convertToColors)
 import Data.List (List(..), snoc, index, range)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -56,11 +57,17 @@ init =
   , strict: false
   }
 
-generatePlaySequence :: forall e. Applicative e => Int -> List String -> Array (e (Maybe Event))
+generatePlaySequence :: forall e. Int -> List String -> Array (Aff e (Maybe Event))
 generatePlaySequence count sequence =
   range 0 (count - 1) #
-  map (\v -> pure $ Just $ AnimateColor 300.0 (fromMaybe "" $ index sequence v) ) #
-  fromFoldable
+  map (\v -> 
+    [ do 
+      delay $ Milliseconds ((toNumber v + 1.0) * 1000.0)
+      pure $ Just $ AnimateColor 300.0 (fromMaybe "" $ index sequence v) 
+    ]
+  ) #
+  fromFoldable #
+  concat
 
 foldp :: Event -> State -> EffModel State Event AppEffects
 foldp Start state = 
@@ -78,7 +85,7 @@ foldp Start state =
 
 foldp (NewSequence list) state =
   { state: state { sequence = list }
-  , effects: [pure $ Just $ PlaySequence]
+  , effects: [ pure $ Just $ PlaySequence ]
   }
 
 foldp (UserClick color) state =
