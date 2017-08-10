@@ -8,7 +8,5 @@ import Control.Monad.Eff (Eff, kind Effect)
 
 foreign import data SOUND :: Effect
 
-foreign import play' :: forall e. String -> Eff (sound :: SOUND| e) Unit
+foreign import play :: forall e. String -> Eff (sound :: SOUND| e) Unit
 
-play :: forall e. String -> Eff (sound :: SOUND | e) Unit
-play = play'

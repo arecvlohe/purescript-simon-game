@@ -18,7 +18,7 @@ const sounds = {
   error: error
 };
 
-exports["play'"] = function(sound) {
+exports.play = function(sound) {
   return function() {
     sounds[sound].play();
   };
