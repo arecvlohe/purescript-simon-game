@@ -23,13 +23,14 @@ import Text.Smolder.HTML (button, div, input, label)
 import Text.Smolder.HTML.Attributes (type', checked)
 import Text.Smolder.Markup (text, (#!), (!), (!?))
 
+type Color = String
 
 data Event 
   = Start
-  | AnimateColor Number String
+  | AnimateColor Color
   | NewSequence (List String)
   | PlaySequence
-  | UserClick String
+  | UserClick Color
   | ResetColor
   | Strict DOMEvent
 
@@ -63,7 +64,7 @@ generatePlaySequence count sequence =
   map (\v -> 
     [ do 
       delay $ Milliseconds ((toNumber v + 1.0) * 1000.0)
-      pure $ Just $ AnimateColor 300.0 (fromMaybe "" $ index sequence v) 
+      pure $ Just $ AnimateColor (fromMaybe "" $ index sequence v) 
     ]
   ) #
   fromFoldable #
@@ -74,14 +75,14 @@ foldp Start state =
   if state.count > 0 then
     noEffects $ state
   else 
-  { state: state { count = state.count + 1 }
-  , effects: 
-      [ do
-          result <- liftEff generateSequence
-          let colors = convertToColors result
-          pure $ Just $ NewSequence colors
-      ]
-  }
+    { state: state { count = state.count + 1 }
+    , effects: 
+        [ do
+            result <- liftEff generateSequence
+            let colors = convertToColors result
+            pure $ Just $ NewSequence colors
+        ]
+    }
 
 foldp (NewSequence list) state =
   { state: state { sequence = list }
@@ -90,16 +91,16 @@ foldp (NewSequence list) state =
 
 foldp (UserClick color) state =
   { state: state { userInput = snoc state.userInput color, currentColor = color }
-  , effects: [ pure $ Just $ AnimateColor 300.0 color ]
+  , effects: [ pure $ Just $ AnimateColor color ]
   }
 foldp ResetColor state = noEffects $ state { currentColor = "" }
 
-foldp (AnimateColor time color) state =
+foldp (AnimateColor color) state =
   { state: state { currentColor = color },
     effects: 
       [ liftEff $ play color *> pure Nothing
       , do 
-        delay $ Milliseconds time
+        delay $ Milliseconds 300.0
         pure $ Just $ ResetColor
       ]
   }
