@@ -32,7 +32,13 @@ data Event
   | ResetColor
   | Strict DOMEvent
 
-type AppEffects = (random :: RANDOM, console :: CONSOLE, dom :: DOM, sound :: SOUND)
+type AppEffects = 
+  ( random :: RANDOM
+  , console :: CONSOLE
+  , dom :: DOM
+  , sound :: SOUND
+  , timer :: TIMER
+  )
 
 type State = 
   { sequence :: List String
