@@ -63,14 +63,10 @@ foldp (NewSequence list) state =
   }
 foldp (UserClick color) state = 
   { state: state { userInput = snoc state.userInput color, currentColor = color }
-  , effects: [ logShow (snoc state.userInput color) *> pure Nothing, 
-    do 
-      liftEff $ play color
-      pure Nothing
-    ,
-    do
-      delay $ Milliseconds 300.0
-      pure $ Just $ ResetColor
+  , effects: 
+      [ logShow (snoc state.userInput color) *> pure Nothing
+      , liftEff $ play color *> pure Nothing
+      , (delay $ Milliseconds 300.0) *> (pure $ Just $ ResetColor)
     ]
   }
 foldp ResetColor state = noEffects $ state { currentColor = "" } 
