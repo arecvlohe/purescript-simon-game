@@ -37,7 +37,6 @@ type AppEffects =
   , console :: CONSOLE
   , dom :: DOM
   , sound :: SOUND
-  , timer :: TIMER
   )
 
 type State = 
