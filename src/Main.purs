@@ -7,9 +7,9 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM)
 import DOM (DOM)
 import Data.Array (fromFoldable, concat)
-import Data.Int (toNumber)
 import Data.Helpers (generateSequence, convertToColors)
-import Data.List (List(..), snoc, index, range)
+import Data.Int (toNumber)
+import Data.List (List(..), snoc, index, range, length, slice)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Sounds (play, SOUND)
 import Data.Styles (buttonStyled)
@@ -24,24 +24,25 @@ import Text.Smolder.HTML.Attributes (type', checked)
 import Text.Smolder.Markup (text, (#!), (!), (!?))
 
 type Color = String
+type Sound = String
 
-data Event 
+data Event
   = Start
-  | AnimateColor Color
+  | AnimateColor Color Sound
   | NewSequence (List String)
   | PlaySequence
   | UserClick Color
   | ResetColor
   | Strict DOMEvent
 
-type AppEffects = 
+type AppEffects =
   ( random :: RANDOM
   , console :: CONSOLE
   , dom :: DOM
   , sound :: SOUND
   )
 
-type State = 
+type State =
   { sequence :: List String
   , userInput :: List String
   , currentColor :: String
@@ -50,7 +51,7 @@ type State =
   }
 
 init :: State
-init = 
+init =
   { sequence: Nil
   , userInput: Nil
   , currentColor: ""
@@ -58,25 +59,33 @@ init =
   , strict: false
   }
 
+checkUserInput :: List String -> List String -> Boolean
+checkUserInput sequence userInput =
+  let
+    seq = slice 0 (length userInput) sequence
+  in
+    seq == userInput
+
 generatePlaySequence :: forall e. Int -> List String -> Array (Aff e (Maybe Event))
 generatePlaySequence count sequence =
   range 0 (count - 1) #
-  map (\v -> 
-    [ do 
-      delay $ Milliseconds ((toNumber v + 1.0) * 1000.0)
-      pure $ Just $ AnimateColor (fromMaybe "" $ index sequence v) 
+  map (\v ->
+    [ do
+        delay $ Milliseconds ((toNumber v + 1.0) * 1000.0)
+        let color = fromMaybe "" $ index sequence v
+        pure $ Just $ AnimateColor color color
     ]
   ) #
   fromFoldable #
   concat
 
 foldp :: Event -> State -> EffModel State Event AppEffects
-foldp Start state = 
+foldp Start state =
   if state.count > 0 then
     noEffects $ state
-  else 
+  else
     { state: state { count = state.count + 1 }
-    , effects: 
+    , effects:
         [ do
             result <- liftEff generateSequence
             let colors = convertToColors result
@@ -90,16 +99,38 @@ foldp (NewSequence list) state =
   }
 
 foldp (UserClick color) state =
-  { state: state { userInput = snoc state.userInput color, currentColor = color }
-  , effects: [ pure $ Just $ AnimateColor color ]
-  }
+  let
+    nextUserInput = snoc state.userInput color
+    checksPass = checkUserInput state.sequence nextUserInput
+  in
+    if checksPass && (length nextUserInput) == state.count then
+      { state: state { userInput = Nil, count = state.count + 1 }
+      , effects:
+        [ pure $ Just $ AnimateColor color color
+        , pure $ Just $ PlaySequence
+        ]
+      }
+    else if checksPass then
+      { state: state { userInput = nextUserInput }
+      , effects:
+        [ pure $ Just $ AnimateColor color color
+        ]
+      }
+    else
+      { state: state { userInput = Nil }
+      , effects:
+        [ pure $ Just $ AnimateColor color "error"
+        , pure $ Just $ PlaySequence
+        ]
+      }
+
 foldp ResetColor state = noEffects $ state { currentColor = "" }
 
-foldp (AnimateColor color) state =
+foldp (AnimateColor color sound) state =
   { state: state { currentColor = color },
-    effects: 
-      [ liftEff $ play color *> pure Nothing
-      , do 
+    effects:
+      [ liftEff $ play sound *> pure Nothing
+      , do
         delay $ Milliseconds 300.0
         pure $ Just $ ResetColor
       ]
@@ -116,18 +147,18 @@ view state =
   div do
     div do
       div
-        ! buttonStyled "red" state.currentColor 
+        ! buttonStyled "red" state.currentColor
         #! onClick (const $ UserClick "red")
         $ text ""
-      div 
+      div
         ! buttonStyled "green" state.currentColor
         #! onClick (const $ UserClick "green")
         $ text ""
-      div 
+      div
         ! buttonStyled "yellow" state.currentColor
         #! onClick (const $ UserClick "yellow")
         $ text ""
-      div 
+      div
         ! buttonStyled "blue" state.currentColor
         #! onClick (const $ UserClick "blue")
         $ text ""
@@ -135,7 +166,7 @@ view state =
       text $ "Count" <> show state.count
     div do
       label $ text "Strict"
-      (input !? state.strict) (checked "checked") ! type' "checkbox" #! onChange Strict 
+      (input !? state.strict) (checked "checked") ! type' "checkbox" #! onChange Strict
     button #! onClick (const Start) $ text "Start"
 
 main :: Eff (CoreEffects AppEffects) Unit
@@ -146,5 +177,5 @@ main = do
     , foldp
     , inputs: []
     }
-  
+
   renderToDOM "#app" app.markup app.input
