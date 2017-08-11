@@ -8,7 +8,7 @@ const red = audio("https://s3.amazonaws.com/freecodecamp/simonSound1.mp3");
 const blue = audio("https://s3.amazonaws.com/freecodecamp/simonSound2.mp3");
 const green = audio("https://s3.amazonaws.com/freecodecamp/simonSound3.mp3");
 const yellow = audio("https://s3.amazonaws.com/freecodecamp/simonSound4.mp3");
-const error = audio("error.wav");
+const error = audio("https://s3.amazonaws.com/adam-recvlohe-sounds/error.wav");
 
 const sounds = {
   red: red,
