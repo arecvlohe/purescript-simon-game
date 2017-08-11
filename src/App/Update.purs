@@ -65,7 +65,7 @@ generatePlaySequence count sequence =
 
 foldp :: Event -> State -> EffModel State Event AppEffects
 foldp Start state =
-  if state.count > 20 then
+  if state.count > 0 then
     noEffects $ state
   else
     { state: state { count = state.count + 1 }
