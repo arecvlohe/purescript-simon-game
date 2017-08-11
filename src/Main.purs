@@ -1,11 +1,14 @@
 module Main where
 
 import Control.Monad.Aff (Aff, delay)
-import Control.Monad.Aff.Console (CONSOLE)
+import Control.Monad.Aff.Console (CONSOLE, logShow)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM)
 import DOM (DOM)
+import DOM.HTML (window)
+import DOM.HTML.Window (alert)
+import DOM.HTML.Types (ALERT)
 import Data.Array (fromFoldable, concat)
 import Data.Helpers (generateSequence, convertToColors)
 import Data.Int (toNumber)
@@ -33,6 +36,7 @@ data Event
   | PlaySequence
   | UserClick Color
   | ResetColor
+  | Reset
   | Strict DOMEvent
 
 type AppEffects =
@@ -40,6 +44,7 @@ type AppEffects =
   , console :: CONSOLE
   , dom :: DOM
   , sound :: SOUND
+  , alert :: ALERT
   )
 
 type State =
@@ -81,7 +86,7 @@ generatePlaySequence count sequence =
 
 foldp :: Event -> State -> EffModel State Event AppEffects
 foldp Start state =
-  if state.count > 0 then
+  if state.count > 20 then
     noEffects $ state
   else
     { state: state { count = state.count + 1 }
@@ -95,7 +100,7 @@ foldp Start state =
 
 foldp (NewSequence list) state =
   { state: state { sequence = list }
-  , effects: [ pure $ Just $ PlaySequence ]
+  , effects: [ pure $ Just $ PlaySequence, logShow list *> pure Nothing ]
   }
 
 foldp (UserClick color) state =
@@ -105,7 +110,13 @@ foldp (UserClick color) state =
   in
     if checksPass && length nextUserInput == 20 then
       { state: init
-      , effects: [ pure $ Just $ Start ]
+      , effects:
+        [ do
+            wind <- liftEff window
+            liftEff $ alert "You just won the game, yay! Let's do it again" wind
+            pure Nothing
+        , pure $ Just $ Start
+        ]
       }
     else if checksPass && length nextUserInput == state.count then
       { state: state { userInput = Nil, count = state.count + 1 }
@@ -152,6 +163,11 @@ foldp PlaySequence state =
 
 foldp (Strict e) state = noEffects $ state { strict = not state.strict }
 
+foldp Reset state =
+  { state: init
+  , effects: [ pure $ Just $ Start ]
+  }
+
 
 view :: State -> HTML Event
 view state =
@@ -179,6 +195,7 @@ view state =
       label $ text "Strict"
       (input !? state.strict) (checked "checked") ! type' "checkbox" #! onChange Strict
     button #! onClick (const Start) $ text "Start"
+    button #! onClick (const Reset) $ text "Reset"
 
 main :: Eff (CoreEffects AppEffects) Unit
 main = do
