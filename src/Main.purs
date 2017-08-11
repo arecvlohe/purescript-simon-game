@@ -103,7 +103,11 @@ foldp (UserClick color) state =
     nextUserInput = snoc state.userInput color
     checksPass = checkUserInput state.sequence nextUserInput
   in
-    if checksPass && (length nextUserInput) == state.count then
+    if checksPass && length nextUserInput == 20 then
+      { state: init
+      , effects: [ pure $ Just $ Start ]
+      }
+    else if checksPass && length nextUserInput == state.count then
       { state: state { userInput = Nil, count = state.count + 1 }
       , effects:
         [ pure $ Just $ AnimateColor color color
@@ -114,6 +118,13 @@ foldp (UserClick color) state =
       { state: state { userInput = nextUserInput }
       , effects:
         [ pure $ Just $ AnimateColor color color
+        ]
+      }
+    else if not checksPass && state.strict then
+      { state: state { userInput = Nil, count = 1 }
+      , effects:
+        [ pure $ Just $ AnimateColor color "error"
+        , pure $ Just $ PlaySequence
         ]
       }
     else
