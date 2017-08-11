@@ -1,10 +1,10 @@
-module Data.Styles (
-  buttonStyled 
-) where
+module App.Styles
+  ( buttonStyled
+  ) where
 
 import Prelude
 
-import CSS (Color, backgroundColor, height)
+import CSS (Color, backgroundColor, height, width)
 import CSS.Color (red, green, yellow, blue, black, saturate, darken)
 import CSS.Size (px)
 import Pux.DOM.HTML.Attributes (style)
@@ -22,8 +22,9 @@ buttonStyled color currentColor =
   in
     style do
       backgroundColor c
-      height $ px 100.0
-  
+      height $ px 200.0
+      width $ px 200.0
+
 
 convertColor :: String -> Color
 convertColor color =
@@ -33,3 +34,4 @@ convertColor color =
     "yellow" -> yellow
     "blue" -> blue
     _ -> black
+
