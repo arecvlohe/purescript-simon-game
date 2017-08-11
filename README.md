@@ -1,8 +1,8 @@
 # Simon Game in PureScript
 
-This is a replica project of the freeCodeCamp challenge <a target="_blank" href="https://www.freecodecamp.org/challenges/build-a-simon-game">Build a Simon Game</a>. The reason for doing this project was to gain a better understanding of PureScript and the front-end framework Pux. Pux takes many of it's ideas from the Elm architecture so having been familiar with Elm & React/Redux, I was, at least in the outset, comfortable with using this design pattern. There were plenty struggles along the way though, as PureScript's type system is much more expressive than Elm. That means there is a lot more overhead but it pushed me to think harder about type systems and how valuable they can be in developing complex applications. It forces you to know what is happening each step of the way, which is invaluable.
+This is a replica project of the freeCodeCamp challenge <a target="_blank" href="https://www.freecodecamp.org/challenges/build-a-simon-game">Build a Simon Game</a>. The reason for doing this project was to gain a better understanding of PureScript and the front-end framework Pux. Pux takes many of it's ideas from the Elm architecture so having been familiar with Elm & React/Redux, I was, at least in the outset, comfortable with using this design pattern. There were plenty struggles along the way though, as PureScript's type system is much more expressive than Elm. That means there is a lot more overhead, however it pushed me to think harder about type systems and how valuable they are developing complex applications. It forced me to know what is happening at each step of the process, which is invaluable.
 
-Special thank you to the PureScript community. I frequently looked for support from the PureScript in Slack and Gitter. Without their support I would not have been able to finish this project. Thank you!
+Special thank you to the PureScript community. I frequently looked for support from the PureScript folks in Slack and Gitter. Without their support I would not have been able to finish this project. Thank you!
 
 ## User Stories
 
