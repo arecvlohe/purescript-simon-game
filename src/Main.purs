@@ -108,7 +108,9 @@ foldp (UserClick color) state =
     nextUserInput = snoc state.userInput color
     checksPass = checkUserInput state.sequence nextUserInput
   in
-    if checksPass && length nextUserInput == 20 then
+    if state.count < 1 then
+      noEffects state
+    else if checksPass && length nextUserInput == 20 then
       { state: init
       , effects:
         [ do
